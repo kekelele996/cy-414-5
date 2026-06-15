@@ -37,7 +37,9 @@ export const courseService = {
     const orConditions: Prisma.CourseWhereInput[] = [
       { status: 'published' }
     ]
-    if (userId && (role === UserRole.COACH || role === UserRole.ADMIN)) {
+    if (role === UserRole.ADMIN) {
+      orConditions.push({ status: 'draft' })
+    } else if (userId && role === UserRole.COACH) {
       orConditions.push({ status: 'draft', coachId: userId })
     }
     const where: Prisma.CourseWhereInput = {
