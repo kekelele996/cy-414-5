@@ -1,0 +1,95 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  student
+  coach
+  admin
+}
+
+enum BookingStatus {
+  pending
+  confirmed
+  completed
+  cancelled
+}
+
+enum CourseStatus {
+  draft
+  published
+  archived
+}
+
+model User {
+  id           Int          @id @default(autoincrement())
+  phone        String       @unique @db.VarChar(32)
+  passwordHash String       @map("password_hash") @db.VarChar(255)
+  nickname     String       @db.VarChar(80)
+  avatar       String?      @db.VarChar(255)
+  role         UserRole     @default(student)
+  gender       String?      @db.VarChar(20)
+  height       Decimal?     @db.Decimal(5, 2)
+  weight       Decimal?     @db.Decimal(5, 2)
+  createdAt    DateTime     @default(now()) @map("created_at")
+  courses      Course[]     @relation("CoachCourses")
+  bookings     Booking[]
+  bodyMetrics  BodyMetric[]
+
+  @@map("users")
+}
+
+model Course {
+  id          Int          @id @default(autoincrement())
+  coachId     Int          @map("coach_id")
+  title       String       @db.VarChar(120)
+  description String?      @db.Text
+  duration    Int
+  price       Decimal      @db.Decimal(10, 2)
+  maxCapacity Int          @default(1) @map("max_capacity")
+  schedule    Json
+  status      CourseStatus @default(published)
+  createdAt   DateTime     @default(now()) @map("created_at")
+  coach       User         @relation("CoachCourses", fields: [coachId], references: [id])
+  bookings    Booking[]
+
+  @@index([coachId])
+  @@map("courses")
+}
+
+model Booking {
+  id           Int           @id @default(autoincrement())
+  userId       Int           @map("user_id")
+  courseId     Int           @map("course_id")
+  scheduleTime DateTime      @map("schedule_time")
+  status       BookingStatus @default(pending)
+  note         String?       @db.VarChar(500)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  user         User          @relation(fields: [userId], references: [id])
+  course       Course        @relation(fields: [courseId], references: [id])
+
+  @@index([userId])
+  @@index([courseId])
+  @@map("bookings")
+}
+
+model BodyMetric {
+  id         Int      @id @default(autoincrement())
+  userId     Int      @map("user_id")
+  weight     Decimal  @db.Decimal(5, 2)
+  bodyFat    Decimal? @map("body_fat") @db.Decimal(5, 2)
+  muscle     Decimal? @db.Decimal(5, 2)
+  bmi        Decimal  @db.Decimal(5, 2)
+  recordDate DateTime @map("record_date") @db.Date
+  createdAt  DateTime @default(now()) @map("created_at")
+  user       User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@map("body_metrics")
+}
+

@@ -1,0 +1,300 @@
+:root {
+  color-scheme: light;
+  --bg: #eef3ef;
+  --surface: #fbfcf8;
+  --surface-soft: #f5f8f2;
+  --ink: #17221b;
+  --muted: #617069;
+  --line: #d7e0d8;
+  --green: #1b6b4a;
+  --green-weak: #dcece2;
+  --accent: #d96f32;
+  --blue: #385f8f;
+  --danger: #ad3c34;
+  font-family: "Avenir Next", "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+  color: var(--ink);
+  background:
+    linear-gradient(90deg, rgba(27, 107, 74, 0.06) 1px, transparent 1px),
+    linear-gradient(180deg, rgba(27, 107, 74, 0.05) 1px, transparent 1px),
+    var(--bg);
+  background-size: 32px 32px;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.app-shell {
+  display: grid;
+  grid-template-columns: 248px minmax(0, 1fr);
+  min-height: 100vh;
+}
+
+.sidebar {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  padding: 24px 18px;
+  border-right: 1px solid var(--line);
+  background: rgba(251, 252, 248, 0.92);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.brand-mark {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  color: #f7f2e8;
+  background: var(--green);
+  border-radius: 8px;
+  font-weight: 900;
+}
+
+.brand strong,
+.brand span,
+.user-pill strong,
+.user-pill span {
+  display: block;
+}
+
+.brand strong {
+  font-size: 18px;
+}
+
+.brand span,
+.user-pill span,
+.eyebrow {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+nav {
+  display: grid;
+  gap: 8px;
+}
+
+nav a {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+  padding: 0 12px;
+  color: var(--muted);
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+nav a.router-link-active {
+  color: var(--green);
+  background: var(--green-weak);
+}
+
+.main {
+  display: grid;
+  align-content: start;
+  gap: 24px;
+  min-width: 0;
+  padding: clamp(20px, 3vw, 40px);
+}
+
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.topbar h1 {
+  margin: 3px 0 0;
+  font-size: clamp(28px, 4vw, 46px);
+  line-height: 1.05;
+}
+
+.eyebrow {
+  color: var(--accent);
+  font-weight: 900;
+}
+
+.user-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  padding: 9px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.section-band {
+  display: grid;
+  gap: 16px;
+}
+
+.section-title {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.section-title h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.section-title span {
+  color: var(--muted);
+}
+
+.panel {
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.grid-3 {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.metric-tile {
+  display: grid;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface-soft);
+}
+
+.metric-tile span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.metric-tile strong {
+  font-size: 28px;
+}
+
+.list-stack {
+  display: grid;
+  gap: 12px;
+}
+
+.booking-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+}
+
+.booking-row h3 {
+  margin: 0 0 4px;
+  font-size: 16px;
+}
+
+.booking-row p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.toolbar .el-input {
+  width: min(360px, 100%);
+}
+
+@media (max-width: 920px) {
+  .app-shell {
+    grid-template-columns: 1fr;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    padding: 14px;
+  }
+
+  .brand {
+    margin-bottom: 14px;
+  }
+
+  nav {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  nav a {
+    justify-content: center;
+    padding: 0 8px;
+  }
+
+  nav a span {
+    display: none;
+  }
+
+  .grid-2,
+  .grid-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .main {
+    padding: 18px 12px 28px;
+  }
+
+  .topbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .user-pill {
+    width: 100%;
+  }
+
+  .booking-row {
+    grid-template-columns: 1fr;
+  }
+}
+

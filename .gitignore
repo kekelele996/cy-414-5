@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.env
+.DS_Store
+*.log
+.idea/
+.vscode/
+backend/coverage/
+frontend/coverage/
+backend/prisma/migrations/*/migration_lock.toml
+backend/src/prisma/migrations/*/migration_lock.toml
+backend/generated/
+frontend/.vite/
+
