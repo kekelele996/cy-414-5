@@ -3,6 +3,7 @@
     <div class="course-head">
       <div>
         <span v-if="course.reason" class="reason">{{ course.reason }}</span>
+        <span v-if="course.status === 'draft'" class="status-draft">草稿</span>
         <h3>{{ course.title }}</h3>
       </div>
       <span class="price">{{ formatPrice(course.price) }}</span>
@@ -18,27 +19,35 @@
 
     <div class="course-foot">
       <CoachAvatar :coach="course.coach" />
-      <el-dropdown v-if="course.schedule.length" trigger="click" @command="handleBook">
-        <el-button type="primary" :icon="CalendarPlus">预约</el-button>
-        <template #dropdown>
-          <el-dropdown-menu>
-            <el-dropdown-item v-for="slot in course.schedule" :key="slot" :command="slot">
-              {{ formatSchedule(slot) }}
-            </el-dropdown-item>
-          </el-dropdown-menu>
-        </template>
-      </el-dropdown>
+      <div class="action-group">
+        <RoleGuard v-if="canCopy" :roles="[UserRole.COACH, UserRole.ADMIN]">
+          <el-button :icon="Copy" @click.stop="handleCopy">复制</el-button>
+        </RoleGuard>
+        <el-dropdown v-if="course.schedule.length && course.status === 'published'" trigger="click" @command="handleBook">
+          <el-button type="primary" :icon="CalendarPlus">预约</el-button>
+          <template #dropdown>
+            <el-dropdown-menu>
+              <el-dropdown-item v-for="slot in course.schedule" :key="slot" :command="slot">
+                {{ formatSchedule(slot) }}
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </template>
+        </el-dropdown>
+      </div>
     </div>
   </article>
 </template>
 
 <script setup lang="ts">
 import { computed, toRef } from 'vue'
-import { CalendarClock, CalendarPlus, Timer, Users } from '@lucide/vue'
+import { CalendarClock, CalendarPlus, Copy, Timer, Users } from '@lucide/vue'
 import type { Course } from '@/types/domain'
 import CoachAvatar from './CoachAvatar.vue'
+import RoleGuard from './RoleGuard'
+import { UserRole } from '@/constants/user'
 import { formatPrice, formatSchedule } from '@/utils/formatters'
 import { useCoachSchedule } from '@/hooks/useCoachSchedule'
+import { useAuth } from '@/hooks/useAuth'
 
 const props = defineProps<{
   course: Course
@@ -46,13 +55,26 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   book: [course: Course, scheduleTime: string]
+  copy: [course: Course]
 }>()
 
+const { user, role } = useAuth()
 const courseRef = computed(() => toRef(props, 'course').value)
 const { nextSchedule } = useCoachSchedule(courseRef)
 
+const canCopy = computed(() => {
+  if (props.course.status !== 'published') return false
+  if (role.value === UserRole.ADMIN) return true
+  if (role.value === UserRole.COACH && props.course.coachId === user.value?.id) return true
+  return false
+})
+
 function handleBook(value: string | number | object) {
   emit('book', props.course, String(value))
+}
+
+function handleCopy() {
+  emit('copy', props.course)
 }
 </script>
 
@@ -76,8 +98,15 @@ function handleBook(value: string | number | object) {
   min-width: 0;
 }
 
+.course-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
 h3 {
-  margin: 4px 0 0;
+  margin: 0;
   color: var(--ink);
   font-size: 20px;
   line-height: 1.25;
@@ -94,6 +123,16 @@ p {
   color: var(--accent);
   font-size: 12px;
   font-weight: 800;
+}
+
+.status-draft {
+  align-self: flex-start;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: var(--muted);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
 }
 
 .price {
@@ -121,6 +160,12 @@ p {
   white-space: nowrap;
 }
 
+.action-group {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 @media (max-width: 680px) {
   .course-head,
   .course-foot {
@@ -130,6 +175,10 @@ p {
 
   .meta-grid {
     grid-template-columns: 1fr;
+  }
+
+  .action-group {
+    justify-content: flex-end;
   }
 }
 </style>

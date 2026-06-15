@@ -7,6 +7,7 @@ export const Messages = {
   USER_PROFILE_UPDATED: 'User[id] profile updated and dashboard refreshed',
   COURSE_CREATED: `Course[id] created by ${UserRoleLabel.coach}`,
   COURSE_LIST_EMPTY: 'Course[list] empty: show training discovery message',
+  COURSE_COPIED: `Course[id] copied to draft by ${UserRoleLabel.coach}`,
   BOOKING_CREATED: `Booking[id] status=${BookingStatusLabel.pending} created`,
   BOOKING_CONFIRMED: `Booking[id] status=${BookingStatusLabel.confirmed} confirmed by coach`,
   BOOKING_COMPLETED: `Booking[id] status=${BookingStatusLabel.completed} completed`,

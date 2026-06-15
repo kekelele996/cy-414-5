@@ -32,10 +32,15 @@ function normalizeCourse(course: any) {
 }
 
 export const courseService = {
-  async list(query: z.infer<typeof courseQuerySchema>) {
-    logger.info('COURSE_LIST', { keyword: query.keyword || '', coachId: query.coachId || '' })
+  async list(query: z.infer<typeof courseQuerySchema>, userId?: number, role?: string) {
+    logger.info('COURSE_LIST', { keyword: query.keyword || '', coachId: query.coachId || '', userId, role })
     const where: Prisma.CourseWhereInput = {
-      status: 'published',
+      OR: [
+        { status: 'published' },
+        ...(userId && (role === UserRole.COACH || role === UserRole.ADMIN)
+          ? [{ status: 'draft', coachId: userId }]
+          : [])
+      ],
       ...(query.keyword
         ? {
             OR: [
@@ -50,7 +55,7 @@ export const courseService = {
     const courses = await prisma.course.findMany({
       where,
       include: { coach: true },
-      orderBy: { createdAt: 'desc' }
+      orderBy: [{ status: 'asc' }, { createdAt: 'desc' }]
     })
     return courses.map(normalizeCourse)
   },
@@ -94,6 +99,43 @@ export const courseService = {
   async recommended() {
     const courses = await this.list({})
     return courses.slice(0, 3).map((course, index) => ({ ...course, reason: index === 0 ? '最近可约' : '训练匹配' }))
+  },
+
+  async copy(id: number, coachId: number, role: string) {
+    logger.info('COURSE_COPY_START', { sourceId: id, coachId })
+    if (role !== UserRole.COACH && role !== UserRole.ADMIN) {
+      throw new AppError(`Course[id=${id}] copy failed: role not ${UserRole.COACH}`, 403, ErrorCodes.COURSE_COACH_REQUIRED, 'Course', 'id', role)
+    }
+    const source = await prisma.course.findUnique({ where: { id } })
+    if (!source) {
+      throw new AppError(`Course[id=${id}] copy failed: id not found`, 404, ErrorCodes.COURSE_NOT_FOUND, 'Course', 'id', role)
+    }
+    if (source.coachId !== coachId && role !== UserRole.ADMIN) {
+      throw new AppError(`Course[id=${id}] copy failed: not owner`, 403, ErrorCodes.COURSE_COPY_NOT_OWNER, 'Course', 'coach_id', role)
+    }
+    if (source.status !== 'published') {
+      throw new AppError(`Course[id=${id}] copy failed: status not published`, 400, ErrorCodes.COURSE_COPY_INVALID_STATUS, 'Course', 'status', role)
+    }
+    try {
+      const course = await prisma.course.create({
+        data: {
+          coachId,
+          title: source.title,
+          description: source.description,
+          duration: source.duration,
+          price: source.price,
+          maxCapacity: source.maxCapacity,
+          schedule: source.schedule,
+          status: 'draft'
+        },
+        include: { coach: true }
+      })
+      logger.info('COURSE_COPY_SUCCESS', { id: course.id, sourceId: id })
+      return normalizeCourse(course)
+    } catch {
+      logger.error('COURSE_COPY_FAILED', { sourceId: id, coachId })
+      throw new AppError(`Course[id=${id}] copy failed: database error`, 500, ErrorCodes.INTERNAL_ERROR, 'Course', 'id', role)
+    }
   }
 }
 

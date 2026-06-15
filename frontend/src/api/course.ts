@@ -13,6 +13,9 @@ export const courseApi = {
   },
   create(payload: Partial<Course>) {
     return request.post<unknown, Course>('/courses', payload)
+  },
+  copy(id: number) {
+    return request.post<unknown, Course>(`/courses/${id}/copy`)
   }
 }
 

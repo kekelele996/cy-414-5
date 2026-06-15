@@ -10,7 +10,7 @@ import type { AuthedRequest } from '../types/auth'
 export const courseController = {
   async list(req: AuthedRequest, res: Response) {
     const query = courseQuerySchema.parse(req.query)
-    res.json(await courseService.list(query))
+    res.json(await courseService.list(query, req.user?.id, req.user?.role))
   },
 
   async recommended(_req: AuthedRequest, res: Response) {
@@ -30,6 +30,11 @@ export const courseController = {
       logger.error('ERROR_HANDLER_CAUGHT', { entity: 'Course', field: 'schedule', role: req.user?.role || 'anonymous', code: ErrorCodes.COURSE_COACH_REQUIRED })
       throw error instanceof AppError ? error : new AppError(`Course[coach_id=${req.user?.id}] create failed: schedule invalid role=${req.user?.role}`, 400, ErrorCodes.COURSE_COACH_REQUIRED, 'Course', 'schedule', req.user?.role || 'anonymous')
     }
+  },
+
+  async copy(req: AuthedRequest, res: Response) {
+    const id = Number(req.params.id)
+    res.status(201).json(await courseService.copy(id, req.user?.id || 0, req.user?.role || UserRole.STUDENT))
   }
 }
 

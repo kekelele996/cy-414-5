@@ -80,6 +80,11 @@ export const useCourseStore = defineStore('courses', {
       } catch {
         this.recommended = demoCourses.slice(0, 2)
       }
+    },
+    async copyCourse(id: number) {
+      const newCourse = await courseApi.copy(id)
+      await this.loadCourses()
+      return newCourse
     }
   }
 })

@@ -14,7 +14,7 @@
     </section>
 
     <section v-if="courseStore.list.length" class="grid-2">
-      <CourseCard v-for="course in courseStore.list" :key="course.id" :course="course" @book="bookCourse" />
+      <CourseCard v-for="course in courseStore.list" :key="course.id" :course="course" @book="bookCourse" @copy="copyCourse" />
     </section>
     <EmptyState v-else title="没有匹配课程" description="换一个训练目标或教练再筛选" />
   </div>
@@ -40,6 +40,15 @@ const userStore = useUserStore()
 async function bookCourse(course: Course, scheduleTime: string) {
   await bookingStore.create(course.id, scheduleTime)
   ElMessage.success(`预约已提交：${course.title}`)
+}
+
+async function copyCourse(course: Course) {
+  try {
+    const newCourse = await courseStore.copyCourse(course.id)
+    ElMessage.success(`已复制为草稿：${newCourse.title}`)
+  } catch (error) {
+    ElMessage.error('复制失败，请稍后重试')
+  }
 }
 
 onMounted(async () => {

@@ -12,3 +12,4 @@ courseRoutes.get('/courses', auth, generalRateLimiter, asyncHandler(courseContro
 courseRoutes.get('/courses/recommended', auth, generalRateLimiter, asyncHandler(courseController.recommended))
 courseRoutes.get('/courses/:id', auth, generalRateLimiter, asyncHandler(courseController.detail))
 courseRoutes.post('/courses', auth, roleCheck([UserRole.COACH, UserRole.ADMIN]), generalRateLimiter, asyncHandler(courseController.create))
+courseRoutes.post('/courses/:id/copy', auth, roleCheck([UserRole.COACH, UserRole.ADMIN]), generalRateLimiter, asyncHandler(courseController.copy))
