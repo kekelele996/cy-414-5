@@ -49,7 +49,7 @@ export const courseService = {
                 OR: [
                   { title: { contains: query.keyword } },
                   { description: { contains: query.keyword } },
-                  { coach: { nickname: { contains: query.keyword } }
+                  { coach: { nickname: { contains: query.keyword } } }
                 ]
               }
             ]
