@@ -34,19 +34,24 @@ function normalizeCourse(course: any) {
 export const courseService = {
   async list(query: z.infer<typeof courseQuerySchema>, userId?: number, role?: string) {
     logger.info('COURSE_LIST', { keyword: query.keyword || '', coachId: query.coachId || '', userId, role })
+    const orConditions: Prisma.CourseWhereInput[] = [
+      { status: 'published' }
+    ]
+    if (userId && (role === UserRole.COACH || role === UserRole.ADMIN)) {
+      orConditions.push({ status: 'draft', coachId: userId })
+    }
     const where: Prisma.CourseWhereInput = {
-      OR: [
-        { status: 'published' },
-        ...(userId && (role === UserRole.COACH || role === UserRole.ADMIN)
-          ? [{ status: 'draft', coachId: userId }]
-          : [])
-      ],
+      OR: orConditions,
       ...(query.keyword
         ? {
-            OR: [
-              { title: { contains: query.keyword } },
-              { description: { contains: query.keyword } },
-              { coach: { nickname: { contains: query.keyword } } }
+            AND: [
+              {
+                OR: [
+                  { title: { contains: query.keyword } },
+                  { description: { contains: query.keyword } },
+                  { coach: { nickname: { contains: query.keyword } }
+                ]
+              }
             ]
           }
         : {}),
@@ -117,6 +122,7 @@ export const courseService = {
       throw new AppError(`Course[id=${id}] copy failed: status not published`, 400, ErrorCodes.COURSE_COPY_INVALID_STATUS, 'Course', 'status', role)
     }
     try {
+      const schedule = Array.isArray(source.schedule) ? source.schedule as string[] : []
       const course = await prisma.course.create({
         data: {
           coachId,
@@ -125,7 +131,7 @@ export const courseService = {
           duration: source.duration,
           price: source.price,
           maxCapacity: source.maxCapacity,
-          schedule: source.schedule,
+          schedule,
           status: 'draft'
         },
         include: { coach: true }
